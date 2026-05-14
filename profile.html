@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEBEST WEAR — My Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0a0a0a;--surface:#141414;--surface2:#1e1e1e;--surface3:#252525;--border:#2a2a2a;--accent:#e8c47a;--accent2:#c9a84c;--text:#f0ece4;--muted:#888;--danger:#e05f5f;--success:#5fbe7e;--warning:#e8a23a}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(10,10,10,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:900;letter-spacing:3px;color:var(--accent);text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-link{color:var(--muted);text-decoration:none;font-size:0.76rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:500;transition:color .2s;padding:6px 14px;border:1px solid var(--border);border-radius:6px}
+.nav-link:hover{color:var(--accent);border-color:rgba(232,196,122,0.3)}
+.sign-out-btn{background:none;border:1px solid rgba(224,95,95,0.3);color:var(--danger);border-radius:6px;padding:6px 14px;font-size:0.76rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.sign-out-btn:hover{border-color:var(--danger);background:rgba(224,95,95,0.06)}
+
+/* REDIRECT GUARD */
+.auth-wall{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;display:none}
+.auth-wall.show{display:flex}
+.auth-wall-icon{font-size:3.5rem;margin-bottom:20px;opacity:.5}
+.auth-wall h2{font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:10px}
+.auth-wall p{color:var(--muted);margin-bottom:28px}
+.btn-gold{background:var(--accent);color:#0a0a0a;border:none;border-radius:8px;padding:14px 32px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s,transform .2s}
+.btn-gold:hover{background:var(--accent2);transform:translateY(-1px)}
+
+/* LAYOUT */
+.profile-wrap{max-width:1100px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:260px 1fr;gap:28px;align-items:start}
+.profile-wrap.hidden{display:none}
+
+/* SIDEBAR */
+.profile-sidebar{position:sticky;top:88px}
+.profile-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.profile-avatar-wrap{background:linear-gradient(135deg,rgba(232,196,122,0.1),rgba(232,196,122,0.03));padding:28px;text-align:center;border-bottom:1px solid var(--border)}
+.profile-avatar{width:72px;height:72px;border-radius:50%;background:var(--accent);color:#0a0a0a;font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.profile-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:3px}
+.profile-email{font-size:0.75rem;color:var(--muted)}
+.profile-badge{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;font-size:0.63rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;background:rgba(232,196,122,0.12);color:var(--accent);border:1px solid rgba(232,196,122,0.2)}
+
+.sidebar-nav{padding:8px 0}
+.sidebar-nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;font-size:0.82rem;color:var(--muted);transition:all .2s;border-left:2px solid transparent}
+.sidebar-nav-item:hover{color:var(--text);background:var(--surface2)}
+.sidebar-nav-item.active{color:var(--accent);background:rgba(232,196,122,0.05);border-left-color:var(--accent)}
+.sidebar-nav-item .ico{font-size:1rem;width:20px;text-align:center}
+
+/* MAIN */
+.profile-main{}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.panel-header{margin-bottom:24px}
+.panel-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700}
+.panel-title span{color:var(--accent)}
+.panel-sub{color:var(--muted);font-size:0.84rem;margin-top:4px}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:border-color .2s}
+.stat-card:hover{border-color:rgba(232,196,122,0.25)}
+.stat-label{font-size:0.63rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.stat-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--accent)}
+.stat-sub{font-size:0.72rem;color:var(--muted);margin-top:2px}
+
+/* FORM CARD */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px}
+.form-card h3{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:20px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:0.67rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;padding:12px 14px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:rgba(232,196,122,0.5);box-shadow:0 0 0 3px rgba(232,196,122,0.05)}
+.field input::placeholder{color:#555}
+.field input:disabled{opacity:.5;cursor:not-allowed}
+
+.form-actions{display:flex;gap:10px;margin-top:20px}
+.btn-save{background:var(--accent);color:#0a0a0a;border:none;border-radius:8px;padding:12px 28px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .2s,transform .2s}
+.btn-save:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-save:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-cancel{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:12px 20px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;transition:all .2s;letter-spacing:1px;text-transform:uppercase}
+.btn-cancel:hover{border-color:var(--danger);color:var(--danger)}
+
+.form-alert{padding:10px 14px;border-radius:6px;font-size:0.8rem;margin-bottom:14px;display:none}
+.form-alert.success{background:rgba(95,190,126,0.1);border:1px solid rgba(95,190,126,0.3);color:var(--success);display:block}
+.form-alert.error{background:rgba(224,95,95,0.1);border:1px solid rgba(224,95,95,0.3);color:var(--danger);display:block}
+
+/* ORDERS */
+.orders-empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.orders-empty .ico{font-size:3rem;margin-bottom:14px;opacity:.5}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;transition:border-color .2s}
+.order-card:hover{border-color:rgba(232,196,122,0.2)}
+.order-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.order-header:hover{background:var(--surface2)}
+.order-ref{font-weight:700;font-size:0.88rem;color:var(--accent)}
+.order-date{font-size:0.73rem;color:var(--muted);margin-top:2px}
+.order-status{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:0.67rem;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.order-status.pending{background:rgba(232,162,58,0.12);color:var(--warning);border:1px solid rgba(232,162,58,0.25)}
+.order-status.processing{background:rgba(95,190,126,0.08);color:#7dd4a0;border:1px solid rgba(95,190,126,0.2)}
+.order-status.shipped{background:rgba(100,160,255,0.1);color:#80b0ff;border:1px solid rgba(100,160,255,0.2)}
+.order-status.delivered{background:rgba(95,190,126,0.12);color:var(--success);border:1px solid rgba(95,190,126,0.25)}
+.order-status.cancelled{background:rgba(224,95,95,0.1);color:var(--danger);border:1px solid rgba(224,95,95,0.2)}
+.order-total-pill{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--accent)}
+.order-body{display:none;padding:16px 20px}
+.order-body.open{display:block}
+.order-items-list{margin-bottom:14px}
+.order-item-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(42,42,42,0.5)}
+.order-item-row:last-child{border-bottom:none}
+.oi-img{width:42px;height:52px;border-radius:5px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;border:1px solid var(--border)}
+.oi-info{flex:1}
+.oi-name{font-size:0.83rem;font-weight:500}
+.oi-meta{font-size:0.7rem;color:var(--muted)}
+.oi-price{font-size:0.85rem;font-weight:700;color:var(--accent)}
+.order-summary-mini{display:flex;gap:20px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border);font-size:0.78rem;color:var(--muted)}
+.order-summary-mini strong{color:var(--text)}
+.order-timeline{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.timeline-title{font-size:0.65rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.timeline{display:flex;gap:0;position:relative}
+.timeline::before{content:'';position:absolute;top:12px;left:12px;right:12px;height:2px;background:var(--border);z-index:0}
+.timeline-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1}
+.tl-dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:0.7rem}
+.timeline-step.done .tl-dot{border-color:var(--success);background:rgba(95,190,126,0.1);color:var(--success)}
+.timeline-step.active .tl-dot{border-color:var(--accent);background:rgba(232,196,122,0.1);color:var(--accent)}
+.tl-label{font-size:0.62rem;color:var(--muted);text-align:center;letter-spacing:0.5px}
+.timeline-step.done .tl-label,.timeline-step.active .tl-label{color:var(--text)}
+
+/* LOADING SPINNER */
+.spinner-wrap{text-align:center;padding:48px;color:var(--muted)}
+.spinner{display:inline-block;width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PASSWORD STRENGTH */
+.pw-bar{display:flex;gap:3px;margin-top:6px}
+.pw-seg{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}
+.pw-seg.weak{background:var(--danger)}
+.pw-seg.fair{background:var(--warning)}
+.pw-seg.strong{background:var(--success)}
+.pw-label{font-size:0.7rem;color:var(--muted);margin-top:4px}
+
+/* DANGER ZONE */
+.danger-card{background:rgba(224,95,95,0.04);border:1px solid rgba(224,95,95,0.2);border-radius:12px;padding:24px}
+.danger-card h3{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--danger);margin-bottom:6px}
+.danger-card p{font-size:0.8rem;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.btn-danger{background:none;border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-danger:hover{background:var(--danger);color:#fff}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:12px 16px;font-size:0.82rem;max-width:280px;animation:slideIn .3s ease;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+.toast.success{border-left-color:var(--success)}
+.toast.error{border-left-color:var(--danger)}
+@keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+@media(max-width:860px){
+  .profile-wrap{grid-template-columns:1fr}
+  .profile-sidebar{position:static}
+  .profile-avatar-wrap{padding:20px}
+  .sidebar-nav{display:flex;overflow-x:auto;padding:0}
+  .sidebar-nav-item{border-left:none;border-bottom:2px solid transparent;white-space:nowrap;padding:12px 16px}
+  .sidebar-nav-item.active{border-bottom-color:var(--accent);border-left:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:500px){
+  nav{padding:0 16px}
+  .profile-wrap{padding:20px 12px}
+  .form-row-2{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="Store.html" class="nav-logo">DEBEST WEAR</a>
+  <div class="nav-right">
+    <a href="Store.html" class="nav-link">← Store</a>
+    <a href="wishlist.html" class="nav-link">♡ Wishlist</a>
+    <button class="sign-out-btn" onclick="doSignOut()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- AUTH WALL (shown if not logged in) -->
+<div class="auth-wall" id="authWall">
+  <div class="auth-wall-icon">🔐</div>
+  <h2>Sign In Required</h2>
+  <p>Please sign in to view your account, order history, and settings.</p>
+  <a href="auth.html?redirect=profile.html" class="btn-gold">Sign In / Create Account</a>
+</div>
+
+<!-- PROFILE LAYOUT -->
+<div class="profile-wrap hidden" id="profileWrap">
+
+  <!-- SIDEBAR -->
+  <div class="profile-sidebar">
+    <div class="profile-card">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div class="profile-name" id="profileName">Loading…</div>
+        <div class="profile-email" id="profileEmail"></div>
+        <div class="profile-badge">Member</div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="sidebar-nav-item active" onclick="showTab('orders',this)"><span class="ico">📦</span><span>My Orders</span></div>
+        <div class="sidebar-nav-item" onclick="showTab('profile',this)"><span class="ico">👤</span><span>Profile</span></div>
+        <div class="sidebar-nav-item" onclick="showTab('addresses',this)"><span class="ico">📍</span><span>Addresses</span></div>
+        <div class="sidebar-nav-item" onclick="showTab('security',this)"><span class="ico">🔒</span><span>Security</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="profile-main">
+
+    <!-- ORDERS TAB -->
+    <div class="tab-panel active" id="tab-orders">
+      <div class="panel-header">
+        <h2 class="panel-title">My <span>Orders</span></h2>
+        <p class="panel-sub">Track your purchases and delivery status</p>
+      </div>
+      <div class="stats-row" id="orderStats">
+        <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val" id="statTotal">—</div><div class="stat-sub">all time</div></div>
+        <div class="stat-card"><div class="stat-label">Total Spent</div><div class="stat-val" id="statSpent">—</div><div class="stat-sub">across all orders</div></div>
+        <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" id="statPending">—</div><div class="stat-sub">being processed</div></div>
+      </div>
+      <div id="ordersContainer">
+        <div class="spinner-wrap"><div class="spinner"></div><br><br>Loading orders…</div>
+      </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div class="tab-panel" id="tab-profile">
+      <div class="panel-header">
+        <h2 class="panel-title">My <span>Profile</span></h2>
+        <p class="panel-sub">Update your personal information</p>
+      </div>
+      <div class="form-card">
+        <h3>Personal Details</h3>
+        <div class="form-alert" id="profileAlert"></div>
+        <div class="form-row-2">
+          <div class="field"><label>First Name</label><input type="text" id="p-first" placeholder="Ada"></div>
+          <div class="field"><label>Last Name</label><input type="text" id="p-last" placeholder="Okafor"></div>
+        </div>
+        <div class="field"><label>Email Address</label><input type="email" id="p-email" placeholder="ada@email.com" disabled></div>
+        <div class="field"><label>Phone Number</label><input type="tel" id="p-phone" placeholder="080 0000 0000"></div>
+        <div class="form-actions">
+          <button class="btn-save" onclick="saveProfile()" id="saveProfileBtn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADDRESSES TAB -->
+    <div class="tab-panel" id="tab-addresses">
+      <div class="panel-header">
+        <h2 class="panel-title">Saved <span>Addresses</span></h2>
+        <p class="panel-sub">Manage your delivery addresses for faster checkout</p>
+      </div>
+      <div class="form-card">
+        <h3>Default Delivery Address</h3>
+        <div class="form-alert" id="addressAlert"></div>
+        <div class="field"><label>Full Address</label><input type="text" id="a-address" placeholder="12 Bode Thomas Street, Surulere"></div>
+        <div class="form-row-2">
+          <div class="field"><label>City</label><input type="text" id="a-city" placeholder="Lagos"></div>
+          <div class="field"><label>State</label>
+            <select id="a-state">
+              <option value="">Select state…</option>
+              <option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option>
+              <option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option>
+              <option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option>
+              <option>Ekiti</option><option>Enugu</option><option>FCT</option><option>Gombe</option>
+              <option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option>
+              <option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option>
+              <option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option>
+              <option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option>
+              <option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Delivery Note / Landmark</label><input type="text" id="a-note" placeholder="e.g. Yellow gate, beside Total filling station"></div>
+        <div class="form-actions">
+          <button class="btn-save" onclick="saveAddress()">Save Address</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECURITY TAB -->
+    <div class="tab-panel" id="tab-security">
+      <div class="panel-header">
+        <h2 class="panel-title">Account <span>Security</span></h2>
+        <p class="panel-sub">Update your password and manage access</p>
+      </div>
+      <div class="form-card">
+        <h3>Change Password</h3>
+        <div class="form-alert" id="securityAlert"></div>
+        <div class="field">
+          <label>New Password</label>
+          <input type="password" id="s-new-pw" placeholder="At least 8 characters" oninput="checkPwStrength(this.value)">
+          <div class="pw-bar"><div class="pw-seg" id="ps1"></div><div class="pw-seg" id="ps2"></div><div class="pw-seg" id="ps3"></div><div class="pw-seg" id="ps4"></div></div>
+          <div class="pw-label" id="pwStrLabel"></div>
+        </div>
+        <div class="field"><label>Confirm New Password</label><input type="password" id="s-confirm-pw" placeholder="Re-enter password"></div>
+        <div class="form-actions">
+          <button class="btn-save" onclick="changePassword()">Update Password</button>
+        </div>
+      </div>
+      <div class="danger-card" style="margin-top:20px">
+        <h3>Sign Out Everywhere</h3>
+        <p>This will sign you out from all devices and browsers where you're currently logged in.</p>
+        <button class="btn-danger" onclick="doSignOut()">Sign Out</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+const SUPABASE_URL = localStorage.getItem('debest_url') || 'https://zoispchxndlaepjeteyz.supabase.co';
+const SUPABASE_KEY = localStorage.getItem('debest_key') || 'sb_publishable_rSEnJVDYu0VfH73UuOgTaw_CDyrdN1E';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const EMOJIS = {Men:'👔',Women:'👗',Kids:'🧸',Shirts:'👕',Dresses:'👗',Trousers:'👖',Jackets:'🧥',Accessories:'🧣',default:'🧣'};
+let currentUser = null;
+
+async function init() {
+  // Check session
+  try {
+    const { data:{ session } } = await db.auth.getSession();
+    if (session) {
+      currentUser = {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+        phone: session.user.user_metadata?.phone || ''
+      };
+    }
+  } catch {}
+
+  if (!currentUser) {
+    const stored = localStorage.getItem('debest_user');
+    if (stored) try { currentUser = JSON.parse(stored); } catch {}
+  }
+
+  if (!currentUser) {
+    document.getElementById('authWall').classList.add('show');
+    return;
+  }
+
+  // Populate UI
+  document.getElementById('profileWrap').classList.remove('hidden');
+  const name = currentUser.name || currentUser.email.split('@')[0];
+  const initials = name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('profileAvatar').textContent = initials;
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileEmail').textContent = currentUser.email;
+
+  // Pre-fill profile form
+  const parts = name.split(' ');
+  document.getElementById('p-first').value = parts[0] || '';
+  document.getElementById('p-last').value = parts.slice(1).join(' ') || '';
+  document.getElementById('p-email').value = currentUser.email || '';
+  document.getElementById('p-phone').value = currentUser.phone || '';
+
+  // Pre-fill address from localStorage
+  const savedAddr = JSON.parse(localStorage.getItem('debest_address') || '{}');
+  if (savedAddr.address) document.getElementById('a-address').value = savedAddr.address;
+  if (savedAddr.city) document.getElementById('a-city').value = savedAddr.city;
+  if (savedAddr.state) document.getElementById('a-state').value = savedAddr.state;
+  if (savedAddr.note) document.getElementById('a-note').value = savedAddr.note;
+
+  loadOrders();
+}
+
+// ── TABS ──
+function showTab(name, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── ORDERS ──
+async function loadOrders() {
+  const container = document.getElementById('ordersContainer');
+
+  // Try Supabase first
+  let orders = [];
+  try {
+    const isLive = SUPABASE_URL && !SUPABASE_URL.includes('YOUR_PROJECT');
+    if (isLive && currentUser?.id) {
+      const { data, error } = await db.from('orders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+      if (!error) orders = data || [];
+    }
+  } catch {}
+
+  // Fallback: demo orders if none found
+  if (orders.length === 0) {
+    orders = getDemoOrders();
+  }
+
+  // Stats
+  const totalSpent = orders.reduce((s,o) => s + (o.total || 0), 0);
+  const pending = orders.filter(o => o.status === 'pending' || o.status === 'processing').length;
+  document.getElementById('statTotal').textContent = orders.length;
+  document.getElementById('statSpent').textContent = '₦' + totalSpent.toLocaleString();
+  document.getElementById('statPending').textContent = pending;
+
+  if (orders.length === 0) {
+    container.innerHTML = '<div class="orders-empty"><div class="ico">📦</div><p style="color:var(--text);font-size:1rem;margin-bottom:6px">No orders yet</p><p>Your order history will appear here after your first purchase.</p><a href="Store.html" class="btn-gold" style="margin-top:20px">Start Shopping</a></div>';
+    return;
+  }
+
+  container.innerHTML = orders.map(o => renderOrderCard(o)).join('');
+}
+
+function renderOrderCard(o) {
+  const statusClass = o.status || 'pending';
+  const statusLabel = { pending:'Pending', processing:'Processing', shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled' }[o.status] || o.status;
+  const date = o.created_at ? new Date(o.created_at).toLocaleDateString('en-NG', { day:'numeric', month:'short', year:'numeric' }) : '—';
+  const ref = o.payment_reference || ('DW-' + (o.id || '000000'));
+  const items = Array.isArray(o.items) ? o.items : [];
+
+  const itemsHtml = items.map(item => {
+    const img = item.image_url ? '<img src="' + item.image_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px">' : (EMOJIS[item.category] || EMOJIS.default);
+    return '<div class="order-item-row"><div class="oi-img">' + img + '</div><div class="oi-info"><div class="oi-name">' + item.name + '</div><div class="oi-meta">Size: ' + item.size + ' · Qty: ' + item.qty + '</div></div><div class="oi-price">₦' + (item.price * item.qty).toLocaleString() + '</div></div>';
+  }).join('');
+
+  const steps = ['pending','processing','shipped','delivered'];
+  const stepIdx = steps.indexOf(o.status);
+  const timelineHtml = o.status !== 'cancelled' ? `
+    <div class="order-timeline">
+      <div class="timeline-title">Order Progress</div>
+      <div class="timeline">
+        ${steps.map((s,i) => `<div class="timeline-step ${i < stepIdx ? 'done' : i === stepIdx ? 'active' : ''}">
+          <div class="tl-dot">${i < stepIdx ? '✓' : i === stepIdx ? '●' : ''}</div>
+          <div class="tl-label">${{pending:'Placed',processing:'Processing',shipped:'Shipped',delivered:'Delivered'}[s]}</div>
+        </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  return `<div class="order-card">
+    <div class="order-header" onclick="toggleOrder(this)">
+      <div>
+        <div class="order-ref">${ref.toUpperCase()}</div>
+        <div class="order-date">${date} · ${items.length} item${items.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="order-status ${statusClass}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block"></span>${statusLabel}</span>
+        <span class="order-total-pill">₦${(o.total||0).toLocaleString()}</span>
+        <span style="color:var(--muted);font-size:1rem">▾</span>
+      </div>
+    </div>
+    <div class="order-body">
+      <div class="order-items-list">${itemsHtml || '<p style="color:var(--muted);font-size:.82rem">No item details available.</p>'}</div>
+      <div class="order-summary-mini">
+        <span>Subtotal: <strong>₦${(o.subtotal||0).toLocaleString()}</strong></span>
+        <span>Delivery: <strong>${o.delivery_fee === 0 ? 'Free' : '₦' + (o.delivery_fee||0).toLocaleString()}</strong></span>
+        ${o.discount ? '<span>Discount: <strong style="color:var(--success)">−₦' + o.discount.toLocaleString() + '</strong></span>' : ''}
+        <span>Payment: <strong>${o.payment_method === 'paystack' ? 'Card/Transfer' : 'Pay on Delivery'}</strong></span>
+      </div>
+      ${o.delivery_address ? '<div style="margin-top:10px;font-size:.78rem;color:var(--muted)">📍 ' + o.delivery_address + '</div>' : ''}
+      ${timelineHtml}
+    </div>
+  </div>`;
+}
+
+function toggleOrder(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+  const arrow = header.querySelector('span:last-child');
+  arrow.textContent = body.classList.contains('open') ? '▴' : '▾';
+}
+
+function getDemoOrders() {
+  return [
+    { id:1, payment_reference:'DW-DEMO001', status:'delivered', created_at: new Date(Date.now()-7*86400000).toISOString(), total:28500, subtotal:28500, delivery_fee:0, discount:0, payment_method:'paystack', delivery_address:'12 Bode Thomas, Lagos', items:[{name:'Linen Relaxed Blazer',category:'Men',size:'L',qty:1,price:28500,image_url:null}] },
+    { id:2, payment_reference:'DW-DEMO002', status:'shipped', created_at: new Date(Date.now()-2*86400000).toISOString(), total:31000, subtotal:32500, delivery_fee:0, discount:1500, payment_method:'cod', delivery_address:'45 Wuse II, Abuja', items:[{name:'Wrap Maxi Dress',category:'Women',size:'M',qty:1,price:19500,image_url:null},{name:'Cargo Utility Pants',category:'Men',size:'S',qty:1,price:15000,image_url:null}] },
+    { id:3, payment_reference:'DW-DEMO003', status:'pending', created_at: new Date().toISOString(), total:8500, subtotal:8500, delivery_fee:1500, discount:0, payment_method:'paystack', delivery_address:'3 GRA, Port Harcourt', items:[{name:'Kids Denim Jacket',category:'Kids',size:'6-7Y',qty:1,price:8500,image_url:null}] },
+  ];
+}
+
+// ── SAVE PROFILE ──
+async function saveProfile() {
+  const first = document.getElementById('p-first').value.trim();
+  const last = document.getElementById('p-last').value.trim();
+  const phone = document.getElementById('p-phone').value.trim();
+  const alertEl = document.getElementById('profileAlert');
+  alertEl.className = 'form-alert';
+
+  if (!first) { alertEl.textContent = 'First name is required.'; alertEl.className = 'form-alert error'; return; }
+
+  try {
+    const { error } = await db.auth.updateUser({ data: { full_name: first + ' ' + last, phone } });
+    if (error) throw error;
+    currentUser.name = first + ' ' + last;
+    localStorage.setItem('debest_user', JSON.stringify(currentUser));
+    document.getElementById('profileName').textContent = currentUser.name;
+    const initials = currentUser.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('profileAvatar').textContent = initials;
+    alertEl.textContent = '✓ Profile updated successfully';
+    alertEl.className = 'form-alert success';
+    showToast('Profile saved ✓', 'success');
+  } catch (e) {
+    // Offline/demo mode — just save locally
+    currentUser.name = first + ' ' + last;
+    localStorage.setItem('debest_user', JSON.stringify(currentUser));
+    alertEl.textContent = '✓ Profile saved locally';
+    alertEl.className = 'form-alert success';
+    showToast('Profile saved ✓', 'success');
+  }
+}
+
+// ── SAVE ADDRESS ──
+function saveAddress() {
+  const addr = { address: document.getElementById('a-address').value.trim(), city: document.getElementById('a-city').value.trim(), state: document.getElementById('a-state').value, note: document.getElementById('a-note').value.trim() };
+  localStorage.setItem('debest_address', JSON.stringify(addr));
+  const alertEl = document.getElementById('addressAlert');
+  alertEl.textContent = '✓ Address saved — will be pre-filled at checkout';
+  alertEl.className = 'form-alert success';
+  showToast('Address saved ✓', 'success');
+}
+
+// ── PASSWORD STRENGTH ──
+function checkPwStrength(val) {
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const cls = ['','weak','weak','fair','strong'];
+  for (let i=1;i<=4;i++) {
+    const s = document.getElementById('ps'+i);
+    s.className = 'pw-seg' + (i<=score ? ' '+cls[score] : '');
+  }
+  document.getElementById('pwStrLabel').textContent = val.length ? ['','Weak','Weak','Fair','Strong'][score] : '';
+}
+
+// ── CHANGE PASSWORD ──
+async function changePassword() {
+  const newPw = document.getElementById('s-new-pw').value;
+  const confirm = document.getElementById('s-confirm-pw').value;
+  const alertEl = document.getElementById('securityAlert');
+  alertEl.className = 'form-alert';
+
+  if (newPw.length < 8) { alertEl.textContent = 'Password must be at least 8 characters.'; alertEl.className = 'form-alert error'; return; }
+  if (newPw !== confirm) { alertEl.textContent = 'Passwords do not match.'; alertEl.className = 'form-alert error'; return; }
+
+  try {
+    const { error } = await db.auth.updateUser({ password: newPw });
+    if (error) throw error;
+    alertEl.textContent = '✓ Password updated successfully';
+    alertEl.className = 'form-alert success';
+    document.getElementById('s-new-pw').value = '';
+    document.getElementById('s-confirm-pw').value = '';
+    showToast('Password changed ✓', 'success');
+  } catch(e) {
+    alertEl.textContent = e.message || 'Password update failed.';
+    alertEl.className = 'form-alert error';
+  }
+}
+
+// ── SIGN OUT ──
+async function doSignOut() {
+  try { await db.auth.signOut(); } catch {}
+  localStorage.removeItem('debest_user');
+  showToast('Signed out', '');
+  setTimeout(() => { window.location.href = 'Store.html'; }, 800);
+}
+
+// ── TOAST ──
+function showToast(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type||'');
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

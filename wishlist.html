@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEBEST WEAR — Wishlist</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0a0a0a;--surface:#141414;--surface2:#1e1e1e;--surface3:#252525;--border:#2a2a2a;--accent:#e8c47a;--accent2:#c9a84c;--text:#f0ece4;--muted:#888;--danger:#e05f5f;--success:#5fbe7e}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(10,10,10,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:900;letter-spacing:3px;color:var(--accent);text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-link{color:var(--muted);text-decoration:none;font-size:0.76rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:500;transition:color .2s;padding:6px 14px;border:1px solid var(--border);border-radius:6px}
+.nav-link:hover{color:var(--accent);border-color:rgba(232,196,122,0.3)}
+
+.page-wrap{max-width:1200px;margin:0 auto;padding:48px 24px}
+.page-header{margin-bottom:36px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.page-title{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900}
+.page-title span{color:var(--accent)}
+.page-count{color:var(--muted);font-size:0.83rem;margin-top:6px}
+.clear-btn{background:none;border:1px solid rgba(224,95,95,0.3);color:var(--danger);border-radius:8px;padding:9px 18px;font-size:0.74rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.clear-btn:hover{border-color:var(--danger);background:rgba(224,95,95,0.06)}
+
+/* GRID */
+.wish-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+
+.wish-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .25s,transform .25s;animation:fadeUp .3s ease both}
+.wish-card:hover{border-color:rgba(232,196,122,0.3);transform:translateY(-3px)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.wish-img{height:220px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;overflow:hidden;cursor:pointer}
+.wish-img img{width:100%;height:100%;object-fit:cover;transition:transform .35s}
+.wish-card:hover .wish-img img{transform:scale(1.05)}
+.wish-img-placeholder{font-size:3.5rem;user-select:none}
+.wish-badge{position:absolute;top:12px;left:12px;padding:3px 10px;border-radius:4px;font-size:0.62rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.wish-badge.Sale{background:var(--danger);color:#fff}
+.wish-badge.New{background:var(--success);color:#fff}
+.wish-badge.Featured{background:var(--accent);color:#0a0a0a}
+.wish-remove{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(10,10,10,0.7);border:none;color:#fff;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;backdrop-filter:blur(6px)}
+.wish-remove:hover{background:var(--danger)}
+.wish-discount{position:absolute;bottom:10px;left:10px;background:var(--danger);color:#fff;padding:3px 8px;border-radius:4px;font-size:0.67rem;font-weight:700}
+
+.wish-info{padding:16px}
+.wish-cat{font-size:0.63rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.wish-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:8px;line-height:1.3}
+.wish-price{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.price-cur{color:var(--accent);font-weight:700;font-size:1rem}
+.price-old{color:var(--muted);text-decoration:line-through;font-size:0.8rem}
+.wish-rating{font-size:0.72rem;color:var(--muted);margin-bottom:12px}
+.wish-rating .stars{color:var(--accent)}
+
+.wish-actions{display:flex;gap:8px}
+.btn-add{flex:1;background:var(--accent);color:#0a0a0a;border:none;border-radius:7px;padding:11px;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:background .2s,transform .2s}
+.btn-add:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-view{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:11px 14px;font-size:0.78rem;cursor:pointer;transition:all .2s}
+.btn-view:hover{border-color:rgba(232,196,122,0.4);color:var(--accent)}
+
+/* EMPTY */
+.wish-empty{text-align:center;padding:100px 24px}
+.wish-empty-icon{font-size:5rem;margin-bottom:20px;opacity:.4}
+.wish-empty h2{font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:10px}
+.wish-empty p{color:var(--muted);margin-bottom:30px;font-size:0.9rem}
+.btn-gold{background:var(--accent);color:#0a0a0a;border:none;border-radius:8px;padding:14px 32px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s,transform .2s}
+.btn-gold:hover{background:var(--accent2);transform:translateY(-1px)}
+
+/* LOADING */
+.loading-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.skeleton{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.skel-img{height:220px;background:linear-gradient(90deg,var(--surface2) 0%,var(--surface3) 50%,var(--surface2) 100%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+.skel-info{padding:16px}
+.skel-line{height:10px;border-radius:4px;background:var(--surface2);margin-bottom:10px;animation:shimmer 1.5s infinite}
+.skel-line.short{width:60%}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:12px 16px;font-size:0.82rem;max-width:280px;animation:slideIn .3s ease;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+.toast.success{border-left-color:var(--success)}
+.toast.error{border-left-color:var(--danger)}
+@keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+@media(max-width:600px){nav{padding:0 16px}.page-wrap{padding:24px 14px}.wish-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="Store.html" class="nav-logo">DEBEST WEAR</a>
+  <div class="nav-right">
+    <a href="Store.html" class="nav-link">← Store</a>
+    <a href="profile.html" class="nav-link">My Account</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My <span>Wishlist</span></h1>
+      <p class="page-count" id="wishCount">Loading…</p>
+    </div>
+    <button class="clear-btn" id="clearBtn" onclick="clearWishlist()" style="display:none">Clear Wishlist</button>
+  </div>
+
+  <div id="loadingGrid" class="loading-grid">
+    ${[1,2,3,4].map(()=>'<div class="skeleton"><div class="skel-img"></div><div class="skel-info"><div class="skel-line"></div><div class="skel-line short"></div></div></div>').join('')}
+  </div>
+
+  <div class="wish-grid" id="wishGrid" style="display:none"></div>
+
+  <div class="wish-empty" id="wishEmpty" style="display:none">
+    <div class="wish-empty-icon">♡</div>
+    <h2>Your wishlist is empty</h2>
+    <p>Save items you love by tapping the heart icon when browsing the collection.</p>
+    <a href="Store.html" class="btn-gold">Browse Collection</a>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+const SUPABASE_URL = localStorage.getItem('debest_url') || 'https://zoispchxndlaepjeteyz.supabase.co';
+const SUPABASE_KEY = localStorage.getItem('debest_key') || 'sb_publishable_rSEnJVDYu0VfH73UuOgTaw_CDyrdN1E';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const EMOJIS = {Men:'👔',Women:'👗',Kids:'🧸',Shirts:'👕',Dresses:'👗',Trousers:'👖',Jackets:'🧥',Accessories:'🧣',default:'🧣'};
+let wishlist = [];
+let products = [];
+let cart = [];
+
+function safeParse(k,fb){try{return JSON.parse(localStorage.getItem(k))||fb}catch{return fb}}
+function saveCart(){localStorage.setItem('debest_cart',JSON.stringify(cart))}
+
+async function init() {
+  wishlist = safeParse('debest_wishlist', []);
+  cart = safeParse('debest_cart', []);
+
+  if (wishlist.length === 0) {
+    showEmpty(); return;
+  }
+
+  // Fetch wishlisted products from Supabase or demo
+  const isLive = SUPABASE_URL && !SUPABASE_URL.includes('YOUR_PROJECT');
+  if (isLive) {
+    try {
+      const { data, error } = await db.from('products').select('*').in('id', wishlist);
+      if (!error && data) products = data;
+    } catch {}
+  }
+
+  // Fallback to demo data filtered by wishlist ids
+  if (products.length === 0) {
+    const demo = getDemoProducts();
+    products = demo.filter(p => wishlist.includes(p.id));
+  }
+
+  // Sort in wishlist order
+  products.sort((a,b) => wishlist.indexOf(a.id) - wishlist.indexOf(b.id));
+
+  render();
+}
+
+function render() {
+  document.getElementById('loadingGrid').style.display = 'none';
+  if (products.length === 0) { showEmpty(); return; }
+
+  document.getElementById('wishCount').textContent = products.length + ' saved item' + (products.length!==1?'s':'');
+  document.getElementById('clearBtn').style.display = 'block';
+
+  const grid = document.getElementById('wishGrid');
+  grid.style.display = 'grid';
+  grid.innerHTML = products.map((p,i) => {
+    const discount = p.old_price && p.old_price > p.price ? Math.round((1-p.price/p.old_price)*100) : 0;
+    const img = p.image_url
+      ? '<img src="' + p.image_url + '" alt="' + p.name + '" loading="lazy">'
+      : '<div class="wish-img-placeholder">' + (EMOJIS[p.category]||EMOJIS.default) + '</div>';
+    const badge = p.badge ? '<span class="wish-badge ' + p.badge + '">' + p.badge + '</span>' : '';
+    const discBadge = discount > 0 ? '<span class="wish-discount">-' + discount + '%</span>' : '';
+    const rating = p.rating ? '<div class="wish-rating"><span class="stars">' + '★'.repeat(Math.round(p.rating)) + '</span> ' + p.rating + ' (' + (p.reviews||0) + ')</div>' : '';
+
+    return '<div class="wish-card" style="animation-delay:' + (i*0.05) + 's">' +
+      '<div class="wish-img" onclick="quickView(' + p.id + ')">' +
+        img + badge + discBadge +
+        '<button class="wish-remove" onclick="event.stopPropagation();removeItem(' + p.id + ')" title="Remove">✕</button>' +
+      '</div>' +
+      '<div class="wish-info">' +
+        '<div class="wish-cat">' + (p.category||'Fashion') + '</div>' +
+        '<div class="wish-name">' + p.name + '</div>' +
+        '<div class="wish-price"><span class="price-cur">₦' + Number(p.price).toLocaleString() + '</span>' + (p.old_price ? '<span class="price-old">₦' + Number(p.old_price).toLocaleString() + '</span>' : '') + '</div>' +
+        rating +
+        '<div class="wish-actions">' +
+          '<button class="btn-add" onclick="addToCart(' + p.id + ')">+ Add to Bag</button>' +
+          '<button class="btn-view" onclick="quickView(' + p.id + ')" title="View in store">↗</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function showEmpty() {
+  document.getElementById('loadingGrid').style.display = 'none';
+  document.getElementById('wishGrid').style.display = 'none';
+  document.getElementById('wishEmpty').style.display = 'block';
+  document.getElementById('wishCount').textContent = '0 saved items';
+  document.getElementById('clearBtn').style.display = 'none';
+}
+
+function removeItem(id) {
+  wishlist = wishlist.filter(w => w !== id);
+  products = products.filter(p => p.id !== id);
+  localStorage.setItem('debest_wishlist', JSON.stringify(wishlist));
+  showToast('Removed from wishlist', '');
+  render();
+  if (products.length === 0) showEmpty();
+}
+
+function clearWishlist() {
+  if (!confirm('Remove all ' + products.length + ' items from your wishlist?')) return;
+  wishlist = []; products = [];
+  localStorage.setItem('debest_wishlist', JSON.stringify(wishlist));
+  showEmpty();
+  showToast('Wishlist cleared', '');
+}
+
+function addToCart(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const size = (p.sizes && p.sizes[0]) || 'M';
+  const key = p.id + '_' + size;
+  const existing = cart.find(i => i.key === key);
+  if (existing) existing.qty++;
+  else cart.push({ key, id:p.id, name:p.name, price:p.price, category:p.category, image_url:p.image_url, size, qty:1 });
+  saveCart();
+  showToast(p.name + ' added to bag ✓', 'success');
+}
+
+function quickView(id) {
+  window.location.href = 'Store.html#product-' + id;
+}
+
+function showToast(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type||'');
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+function getDemoProducts() {
+  return [
+    {id:1,name:'Linen Relaxed Blazer',category:'Men',price:28500,old_price:38000,sizes:['S','M','L','XL'],image_url:null,badge:'New',rating:4.7,reviews:128},
+    {id:2,name:'Wrap Maxi Dress',category:'Women',price:19500,old_price:null,sizes:['XS','S','M','L'],image_url:null,badge:null,rating:4.9,reviews:342},
+    {id:3,name:'Cargo Utility Pants',category:'Men',price:15000,old_price:22000,sizes:['S','M','L','XL'],image_url:null,badge:'Sale',rating:4.5,reviews:89},
+    {id:4,name:'Floral Puff Sleeve Top',category:'Women',price:11500,old_price:null,sizes:['XS','S','M','L'],image_url:null,badge:'New',rating:4.6,reviews:201},
+    {id:5,name:'Kids Denim Jacket',category:'Kids',price:8500,old_price:12000,sizes:['2-3Y','4-5Y','6-7Y','8-9Y'],image_url:null,badge:'Sale',rating:4.8,reviews:156},
+    {id:6,name:'Oversized Oxford Shirt',category:'Men',price:14500,old_price:null,sizes:['S','M','L','XL'],image_url:null,badge:null,rating:4.4,reviews:67},
+    {id:7,name:'Satin Slip Dress',category:'Women',price:23000,old_price:31000,sizes:['XS','S','M','L'],image_url:null,badge:'Sale',rating:4.8,reviews:289},
+    {id:8,name:'Kids Graphic Tee Set',category:'Kids',price:6500,old_price:null,sizes:['2-3Y','4-5Y','6-7Y','8-9Y'],image_url:null,badge:'New',rating:4.7,reviews:412},
+  ];
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
