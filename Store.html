@@ -1434,8 +1434,8 @@ function updateAuthNav() {
     const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'Account';
     btn.innerHTML = '<div class="auth-nav-avatar">' + initials + '</div>' + firstName;
     btn.classList.add('signed-in');
-    btn.removeAttribute('href');
-    btn.onclick = handleAccountClick;
+    btn.href = 'profile.html';
+    btn.onclick = null;
   } else {
     btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Sign In / Register';
     btn.classList.remove('signed-in');
@@ -1498,11 +1498,20 @@ function isSupabaseConfigured() { return true; }
 // ── FETCH ──
 async function fetchProducts() {
   try {
+    // Try with is_active filter first
     const { data, error } = await db
       .from('products').select('*').eq('is_active', true)
       .order('created_at', { ascending: false });
     if (error) throw error;
-    allProducts = data || [];
+    // Fallback: if no results, fetch all rows (is_active may not be set on some rows)
+    if (!data || data.length === 0) {
+      const { data: allData, error: allError } = await db
+        .from('products').select('*')
+        .order('created_at', { ascending: false });
+      if (!allError) allProducts = allData || [];
+    } else {
+      allProducts = data;
+    }
   } catch (e) {
     console.warn('Could not fetch products:', e.message);
     allProducts = [];
@@ -2038,7 +2047,7 @@ function catSelect(cat, groupId) {
       grp.querySelectorAll('.cat-dropdown-item').forEach(item => {
         const itemTxt = item.textContent.trim().replace('✓','').trim();
         const catMap = {
-          'All Men's':'Men', 'All Women's':'Women', 'All Kids':'Kids',
+          "All Men's":'Men', "All Women's":'Women', 'All Kids':'Kids',
           'Tops':'Shirts', 'Dresses':'Dresses', 'Trousers':'Trousers',
           'Jackets':'Jackets', 'Shirts':'Shirts', 'Accessories':'Accessories'
         };
