@@ -36,27 +36,69 @@
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 40px; height: 70px;
-    background: rgba(10,10,10,0.92);
+    padding: 0 32px; height: 70px;
+    background: rgba(10,10,10,0.96);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
+    gap: 12px;
   }
   .nav-logo {
     font-family: 'Playfair Display', serif;
-    font-size: 1.45rem; font-weight: 900;
-    letter-spacing: 3px;
-    color: var(--accent);
-    text-decoration: none;
-    white-space: nowrap;
+    font-size: 1.35rem; font-weight: 900;
+    letter-spacing: 3px; color: var(--accent);
+    text-decoration: none; white-space: nowrap; flex-shrink: 0;
   }
-  .nav-links { display: flex; gap: 28px; list-style: none; }
-  .nav-links a {
+
+  /* ── DROPDOWN NAV ── */
+  .nav-links { display: flex; gap: 2px; list-style: none; align-items: center; }
+  .nav-links > li { position: relative; }
+  .nav-links > li > a {
     color: var(--muted); text-decoration: none;
-    font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase;
-    font-weight: 500; transition: color .2s; cursor: pointer;
+    font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;
+    font-weight: 500; transition: all .2s; cursor: pointer;
+    padding: 7px 11px; border-radius: 6px;
+    display: flex; align-items: center; gap: 4px; white-space: nowrap;
   }
-  .nav-links a:hover, .nav-links a.active { color: var(--accent); }
-  .nav-actions { display: flex; align-items: center; gap: 16px; }
+  .nav-links > li > a:hover, .nav-links > li > a.active {
+    color: var(--accent); background: rgba(232,196,122,0.06);
+  }
+  .drop-arrow {
+    font-size: 0.5rem; opacity: 0.45; transition: transform .2s;
+    display: inline-block; line-height: 1;
+  }
+  .nav-links > li:hover > a .drop-arrow { transform: rotate(180deg); opacity: 1; }
+
+  /* dropdown panel */
+  .nav-dropdown {
+    position: absolute; top: calc(100% + 10px); left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px;
+    min-width: 180px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(232,196,122,0.04);
+    opacity: 0; pointer-events: none;
+    transition: opacity .18s, transform .18s;
+    z-index: 200;
+  }
+  .nav-links > li:hover .nav-dropdown {
+    opacity: 1; pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 6px;
+    color: var(--muted); text-decoration: none;
+    font-size: 0.8rem; font-weight: 500;
+    transition: all .15s; cursor: pointer; white-space: nowrap;
+  }
+  .nav-dropdown a:hover { color: var(--text); background: var(--surface2); }
+  .dd-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
+  .nav-dropdown-divider { height: 1px; background: var(--border); margin: 5px 0; }
+
+  .nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  /* ── SEARCH ── */
   .search-bar {
     display: flex; align-items: center;
     background: var(--surface2); border: 1px solid var(--border);
@@ -67,47 +109,67 @@
   .search-bar input {
     background: none; border: none; outline: none;
     color: var(--text); font-family: 'DM Sans', sans-serif;
-    font-size: 0.83rem; width: 150px;
+    font-size: 0.83rem; width: 120px;
   }
   .search-bar input::placeholder { color: var(--muted); }
+
+  /* ── CART BUTTON (full pill) ── */
   .cart-btn {
     position: relative; cursor: pointer;
-    background: var(--accent); border: none; border-radius: 50%;
-    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    background: var(--accent); border: none; border-radius: 24px;
+    height: 38px; padding: 0 16px;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
     transition: transform .2s, background .2s;
+    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.5px; color: #0a0a0a; white-space: nowrap; flex-shrink: 0;
   }
-  .cart-btn:hover { transform: scale(1.1); background: var(--accent2); }
+  .cart-btn:hover { transform: translateY(-1px); background: var(--accent2); }
   .cart-count {
-    position: absolute; top: -4px; right: -4px;
-    background: var(--danger); color: #fff;
-    font-size: 0.62rem; font-weight: 700;
-    width: 18px; height: 18px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
+    background: #0a0a0a; color: var(--accent);
+    font-size: 0.62rem; font-weight: 800;
+    min-width: 18px; height: 18px; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center; padding: 0 4px;
   }
   .cart-count.hidden { display: none; }
+
+  /* ── WISHLIST BTN ── */
+  .wish-btn {
+    position: relative; cursor: pointer;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 24px; height: 38px; padding: 0 14px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .2s; flex-shrink: 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.76rem; font-weight: 600; color: var(--muted);
+    white-space: nowrap;
+  }
+  .wish-btn:hover { border-color: rgba(232,196,122,0.4); color: var(--accent); background: rgba(232,196,122,0.05); }
+  .wish-count {
+    background: var(--danger); color: #fff;
+    font-size: 0.58rem; font-weight: 800;
+    min-width: 16px; height: 16px; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center; padding: 0 3px;
+  }
+  .wish-count.hidden { display: none; }
 
   /* ── AUTH NAV ── */
   .auth-nav-btn {
     display: flex; align-items: center; gap: 7px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 7px 16px;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.75rem; font-weight: 500;
-    letter-spacing: 1px; text-transform: uppercase;
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 24px; padding: 0 16px; height: 38px;
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 0.76rem; font-weight: 600; letter-spacing: 0.3px;
     cursor: pointer; text-decoration: none;
-    transition: all .2s; white-space: nowrap;
+    transition: all .2s; white-space: nowrap; flex-shrink: 0;
   }
-  .auth-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .auth-nav-btn.signed-in { border-color: rgba(232,196,122,0.3); color: var(--accent); }
-  .auth-nav-btn.signed-in:hover { background: rgba(232,196,122,0.08); }
+  .auth-nav-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(232,196,122,0.05); }
+  .auth-nav-btn.signed-in { border-color: rgba(232,196,122,0.4); color: var(--accent); background: rgba(232,196,122,0.07); }
+  .auth-nav-btn.signed-in:hover { background: rgba(232,196,122,0.13); }
   .auth-nav-avatar {
-    width: 22px; height: 22px; border-radius: 50%;
+    width: 24px; height: 24px; border-radius: 50%;
     background: var(--accent); color: #0a0a0a;
-    font-size: 0.65rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
 
   /* ── AUTH GATE MODAL ── */
@@ -248,22 +310,86 @@
   }
   .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ── CATEGORY BAR ── */
+  /* ── CATEGORY DROPDOWN BAR ── */
   .category-bar {
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px; padding: 20px 40px;
-    background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: flex-start;
+    gap: 6px; padding: 10px 32px;
+    background: var(--surface2); border-bottom: 1px solid var(--border);
     position: sticky; top: 70px; z-index: 100;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
   }
+  .category-bar::-webkit-scrollbar { display: none; }
+
+  /* wrapper for each dropdown trigger */
+  .cat-group { position: relative; flex-shrink: 0; }
+
+  /* the visible pill button */
   .cat-pill {
-    padding: 8px 20px; border-radius: 24px; font-size: 0.78rem;
-    letter-spacing: 1px; text-transform: uppercase; font-weight: 500;
+    padding: 6px 14px; border-radius: 20px; font-size: 0.73rem;
+    letter-spacing: 0.8px; text-transform: uppercase; font-weight: 500;
     border: 1px solid var(--border); cursor: pointer;
     transition: all .2s; color: var(--muted); background: transparent;
+    white-space: nowrap; display: flex; align-items: center; gap: 5px;
+    font-family: 'DM Sans', sans-serif;
   }
-  .cat-pill:hover, .cat-pill.active {
+  .cat-pill .cp-arrow {
+    font-size: 0.48rem; opacity: 0.45; transition: transform .2s;
+    line-height: 1; margin-top: 1px;
+  }
+  .cat-pill:hover { border-color: rgba(232,196,122,0.4); color: var(--text); }
+  .cat-pill.active {
     background: var(--accent); color: #0a0a0a;
-    border-color: var(--accent); font-weight: 600;
+    border-color: var(--accent); font-weight: 700;
+  }
+  .cat-pill.active .cp-arrow { opacity: 0.6; }
+  .cat-group.open > .cat-pill { border-color: rgba(232,196,122,0.5); color: var(--accent); background: rgba(232,196,122,0.06); }
+  .cat-group.open > .cat-pill .cp-arrow { transform: rotate(180deg); opacity: 1; }
+
+  /* dropdown panel */
+  .cat-dropdown {
+    position: absolute; top: calc(100% + 8px); left: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 6px;
+    min-width: 190px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.65), 0 0 0 1px rgba(232,196,122,0.04);
+    opacity: 0; pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity .18s, transform .18s;
+    z-index: 200;
+  }
+  .cat-group.open .cat-dropdown {
+    opacity: 1; pointer-events: all; transform: translateY(0);
+  }
+  .cat-dropdown-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 7px;
+    color: var(--muted); font-size: 0.82rem; font-weight: 400;
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+    border: none; background: none; width: 100%;
+    font-family: 'DM Sans', sans-serif; text-align: left;
+  }
+  .cat-dropdown-item:hover { color: var(--text); background: var(--surface2); }
+  .cat-dropdown-item.selected { color: var(--accent); font-weight: 600; background: rgba(232,196,122,0.06); }
+  .cat-dropdown-item .cd-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
+  .cat-dropdown-item .cd-check { margin-left: auto; font-size: 0.7rem; color: var(--accent); opacity: 0; }
+  .cat-dropdown-item.selected .cd-check { opacity: 1; }
+  .cat-dropdown-divider { height: 1px; background: var(--border); margin: 5px 0; }
+
+  /* "All Items" always-visible pill (no dropdown) */
+  .cat-pill-simple {
+    padding: 6px 14px; border-radius: 20px; font-size: 0.73rem;
+    letter-spacing: 0.8px; text-transform: uppercase; font-weight: 500;
+    border: 1px solid var(--border); cursor: pointer;
+    transition: all .2s; color: var(--muted); background: transparent;
+    white-space: nowrap; font-family: 'DM Sans', sans-serif;
+    flex-shrink: 0;
+  }
+  .cat-pill-simple:hover { border-color: rgba(232,196,122,0.4); color: var(--text); }
+  .cat-pill-simple.active {
+    background: var(--accent); color: #0a0a0a;
+    border-color: var(--accent); font-weight: 700;
   }
 
   /* ── GRID CONTROLS ── */
@@ -830,13 +956,15 @@
     .products-grid { grid-template-columns: repeat(2, 1fr); }
     .products-grid.grid-3, .products-grid.grid-4 { grid-template-columns: repeat(2, 1fr); }
   }
-  @media (max-width: 768px) {
-    nav { padding: 0 16px; }
+  @media (max-width: 900px) {
     .nav-links { display: none; }
     .live-indicator { display: none; }
-    .search-bar input { width: 90px; }
+  }
+  @media (max-width: 768px) {
+    nav { padding: 0 14px; gap: 8px; }
+    .search-bar { display: none; }
     .section { padding: 40px 16px; }
-    .category-bar { padding: 14px 16px; top: 70px; }
+    .category-bar { padding: 10px 14px; top: 70px; }
     .footer-grid { grid-template-columns: 1fr 1fr; }
     .cart-drawer { width: 100vw; }
     .hero-title { font-size: 2.8rem; }
@@ -844,6 +972,13 @@
     .products-grid.list-view { grid-template-columns: 1fr; }
     .products-grid.list-view .product-img { width: 110px; }
     .modal { height: 95vh; max-height: 95vh; }
+    .wish-btn { padding: 0 10px; font-size: 0; }
+    .wish-btn svg { display: block; }
+    .cart-btn { padding: 0 12px; }
+    .cart-btn svg { display: block; }
+    .auth-nav-btn { padding: 0 12px; font-size: 0; }
+    .auth-nav-btn svg { display: block; }
+    .auth-nav-avatar { font-size: 0.65rem; }
   }
   @media (max-width: 480px) {
     .products-grid, .products-grid.grid-3, .products-grid.grid-2, .products-grid.grid-4 {
@@ -860,13 +995,48 @@
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="#">DEBEST WEAR</a>
+
   <ul class="nav-links">
-    <li><a onclick="filterCategory('All', null)">All</a></li>
-    <li><a onclick="filterCategory('Men', null)">Men</a></li>
-    <li><a onclick="filterCategory('Women', null)">Women</a></li>
-    <li><a onclick="filterCategory('Kids', null)">Kids</a></li>
-    <li><a onclick="filterCategory('Sale', null)">Sale</a></li>
+    <li>
+      <a onclick="filterCategory('All', null)">All <span class="drop-arrow">▾</span></a>
+      <div class="nav-dropdown">
+        <a onclick="filterCategory('All', null); document.getElementById('products').scrollIntoView({behavior:'smooth'})"><span class="dd-icon">✨</span>New Arrivals</a>
+        <a onclick="filterCategory('Sale', null); document.getElementById('products').scrollIntoView({behavior:'smooth'})"><span class="dd-icon">🔥</span>Sale</a>
+      </div>
+    </li>
+    <li>
+      <a onclick="filterCategory('Men', null)">Men <span class="drop-arrow">▾</span></a>
+      <div class="nav-dropdown">
+        <a onclick="filterCategory('Shirts', null)"><span class="dd-icon">👕</span>Shirts</a>
+        <a onclick="filterCategory('Trousers', null)"><span class="dd-icon">👖</span>Trousers</a>
+        <a onclick="filterCategory('Jackets', null)"><span class="dd-icon">🧥</span>Jackets</a>
+        <div class="nav-dropdown-divider"></div>
+        <a onclick="filterCategory('Men', null)"><span class="dd-icon">👔</span>All Men's</a>
+      </div>
+    </li>
+    <li>
+      <a onclick="filterCategory('Women', null)">Women <span class="drop-arrow">▾</span></a>
+      <div class="nav-dropdown">
+        <a onclick="filterCategory('Dresses', null)"><span class="dd-icon">👗</span>Dresses</a>
+        <a onclick="filterCategory('Shirts', null)"><span class="dd-icon">👚</span>Tops</a>
+        <a onclick="filterCategory('Accessories', null)"><span class="dd-icon">🧣</span>Accessories</a>
+        <div class="nav-dropdown-divider"></div>
+        <a onclick="filterCategory('Women', null)"><span class="dd-icon">👒</span>All Women's</a>
+      </div>
+    </li>
+    <li>
+      <a onclick="filterCategory('Kids', null)">Kids <span class="drop-arrow">▾</span></a>
+      <div class="nav-dropdown">
+        <a onclick="filterCategory('Kids', null)"><span class="dd-icon">🧸</span>All Kids</a>
+        <a onclick="filterCategory('Jackets', null)"><span class="dd-icon">🧥</span>Jackets</a>
+        <a onclick="filterCategory('Shirts', null)"><span class="dd-icon">👕</span>Tops</a>
+      </div>
+    </li>
+    <li>
+      <a onclick="filterCategory('Sale', null)" style="color:var(--danger)">🔥 Sale</a>
+    </li>
   </ul>
+
   <div class="nav-actions">
     <div class="live-indicator">
       <div class="live-dot"></div> Live
@@ -875,14 +1045,19 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" placeholder="Search..." id="searchInput" oninput="handleSearch()">
     </div>
+    <!-- WISHLIST -->
+    <button class="wish-btn" onclick="goToWishlist()" title="Wishlist">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Wishlist
+      <span class="wish-count hidden" id="wishCount">0</span>
+    </button>
+    <!-- MY BAG -->
     <button class="cart-btn" onclick="toggleCart()">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      My Bag
       <span class="cart-count hidden" id="cartCount">0</span>
     </button>
-    <button class="cart-btn" onclick="goToWishlist()" title="Wishlist" style="background:var(--surface2);border:1px solid var(--border)">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-      <span class="cart-count hidden" id="wishCount" style="background:#e05f5f">0</span>
-    </button>
+    <!-- AUTH -->
     <a id="authNavBtn" href="index.html" class="auth-nav-btn">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Sign In
@@ -904,18 +1079,102 @@
   </div>
 </section>
 
-<!-- CATEGORY BAR -->
-<div class="category-bar">
-  <button class="cat-pill active" onclick="filterCategory('All', this)">All Items</button>
-  <button class="cat-pill" onclick="filterCategory('Men', this)">Men</button>
-  <button class="cat-pill" onclick="filterCategory('Women', this)">Women</button>
-  <button class="cat-pill" onclick="filterCategory('Kids', this)">Kids</button>
-  <button class="cat-pill" onclick="filterCategory('Shirts', this)">Shirts</button>
-  <button class="cat-pill" onclick="filterCategory('Dresses', this)">Dresses</button>
-  <button class="cat-pill" onclick="filterCategory('Trousers', this)">Trousers</button>
-  <button class="cat-pill" onclick="filterCategory('Jackets', this)">Jackets</button>
-  <button class="cat-pill" onclick="filterCategory('Accessories', this)">Accessories</button>
-  <button class="cat-pill" onclick="filterCategory('Sale', this)">🔥 Sale</button>
+<!-- CATEGORY BAR (dropdown groups) -->
+<div class="category-bar" id="categoryBar">
+
+  <!-- All Items -->
+  <button class="cat-pill-simple active" id="pill-all" onclick="catSelect('All')">All Items</button>
+
+  <!-- Men -->
+  <div class="cat-group" id="grp-men">
+    <button class="cat-pill" onclick="toggleCatGroup('grp-men')">
+      Men <span class="cp-arrow">▾</span>
+    </button>
+    <div class="cat-dropdown">
+      <button class="cat-dropdown-item selected" onclick="catSelect('Men','grp-men')">
+        <span class="cd-icon">👔</span>All Men's<span class="cd-check">✓</span>
+      </button>
+      <div class="cat-dropdown-divider"></div>
+      <button class="cat-dropdown-item" onclick="catSelect('Shirts','grp-men')">
+        <span class="cd-icon">👕</span>Shirts<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Trousers','grp-men')">
+        <span class="cd-icon">👖</span>Trousers<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Jackets','grp-men')">
+        <span class="cd-icon">🧥</span>Jackets<span class="cd-check">✓</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Women -->
+  <div class="cat-group" id="grp-women">
+    <button class="cat-pill" onclick="toggleCatGroup('grp-women')">
+      Women <span class="cp-arrow">▾</span>
+    </button>
+    <div class="cat-dropdown">
+      <button class="cat-dropdown-item selected" onclick="catSelect('Women','grp-women')">
+        <span class="cd-icon">👗</span>All Women's<span class="cd-check">✓</span>
+      </button>
+      <div class="cat-dropdown-divider"></div>
+      <button class="cat-dropdown-item" onclick="catSelect('Dresses','grp-women')">
+        <span class="cd-icon">👘</span>Dresses<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Shirts','grp-women')">
+        <span class="cd-icon">👚</span>Tops<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Accessories','grp-women')">
+        <span class="cd-icon">🧣</span>Accessories<span class="cd-check">✓</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Kids -->
+  <div class="cat-group" id="grp-kids">
+    <button class="cat-pill" onclick="toggleCatGroup('grp-kids')">
+      Kids <span class="cp-arrow">▾</span>
+    </button>
+    <div class="cat-dropdown">
+      <button class="cat-dropdown-item selected" onclick="catSelect('Kids','grp-kids')">
+        <span class="cd-icon">🧸</span>All Kids<span class="cd-check">✓</span>
+      </button>
+      <div class="cat-dropdown-divider"></div>
+      <button class="cat-dropdown-item" onclick="catSelect('Jackets','grp-kids')">
+        <span class="cd-icon">🧥</span>Jackets<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Shirts','grp-kids')">
+        <span class="cd-icon">👕</span>Tops<span class="cd-check">✓</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- More (sub-categories) -->
+  <div class="cat-group" id="grp-more">
+    <button class="cat-pill" onclick="toggleCatGroup('grp-more')">
+      More <span class="cp-arrow">▾</span>
+    </button>
+    <div class="cat-dropdown">
+      <button class="cat-dropdown-item" onclick="catSelect('Shirts','grp-more')">
+        <span class="cd-icon">👕</span>Shirts<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Dresses','grp-more')">
+        <span class="cd-icon">👘</span>Dresses<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Trousers','grp-more')">
+        <span class="cd-icon">👖</span>Trousers<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Jackets','grp-more')">
+        <span class="cd-icon">🧥</span>Jackets<span class="cd-check">✓</span>
+      </button>
+      <button class="cat-dropdown-item" onclick="catSelect('Accessories','grp-more')">
+        <span class="cd-icon">🧣</span>Accessories<span class="cd-check">✓</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sale (always direct) -->
+  <button class="cat-pill-simple" id="pill-sale" onclick="catSelect('Sale')" style="color:var(--danger);border-color:rgba(224,95,95,0.3)">🔥 Sale</button>
+
 </div>
 
 <!-- PRODUCTS SECTION -->
@@ -1172,12 +1431,13 @@ function updateAuthNav() {
     const initials = currentUser.name
       ? currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
       : currentUser.email[0].toUpperCase();
-    btn.innerHTML = '<div class="auth-nav-avatar">' + initials + '</div>' + (currentUser.name.split(' ')[0] || 'Account');
+    const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'Account';
+    btn.innerHTML = '<div class="auth-nav-avatar">' + initials + '</div>' + firstName;
     btn.classList.add('signed-in');
     btn.removeAttribute('href');
     btn.onclick = handleAccountClick;
   } else {
-    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Sign In';
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Sign In / Register';
     btn.classList.remove('signed-in');
     btn.href = 'index.html';
     btn.onclick = null;
@@ -1350,6 +1610,13 @@ function filterCategory(cat, el, scrollToTop) {
   currentCategory = cat;
   document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
   if (el) el.classList.add('active');
+  // Sync nav-link active state
+  document.querySelectorAll('.nav-links > li > a').forEach(a => a.classList.remove('active'));
+  const mainCats = {'All':'All','Men':'Men','Women':'Women','Kids':'Kids','Sale':'Sale'};
+  document.querySelectorAll('.nav-links > li > a').forEach(a => {
+    const txt = a.textContent.trim().replace('▾','').trim();
+    if (txt === cat || (cat === 'Sale' && txt.includes('Sale'))) a.classList.add('active');
+  });
   if (cat === 'All') filteredProducts = [...allProducts];
   else if (cat === 'Sale') filteredProducts = allProducts.filter(p => p.old_price && p.old_price > p.price);
   else filteredProducts = allProducts.filter(p => p.category === cat);
@@ -1735,6 +2002,80 @@ function showToast(msg, type) {
   container.appendChild(toast);
   setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500);
 }
+
+// ── CATEGORY DROPDOWN LOGIC ──
+function toggleCatGroup(groupId) {
+  const group = document.getElementById(groupId);
+  const isOpen = group.classList.contains('open');
+  // close all
+  document.querySelectorAll('.cat-group.open').forEach(g => g.classList.remove('open'));
+  // toggle this one
+  if (!isOpen) group.classList.add('open');
+}
+
+function catSelect(cat, groupId) {
+  // Close all dropdowns
+  document.querySelectorAll('.cat-group.open').forEach(g => g.classList.remove('open'));
+
+  // Reset all active states
+  document.querySelectorAll('.cat-pill-simple').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cat-dropdown-item').forEach(i => i.classList.remove('selected'));
+
+  // Activate the right pill / group
+  if (cat === 'All') {
+    const allPill = document.getElementById('pill-all');
+    if (allPill) allPill.classList.add('active');
+  } else if (cat === 'Sale') {
+    const salePill = document.getElementById('pill-sale');
+    if (salePill) salePill.classList.add('active');
+  } else if (groupId) {
+    // Activate the group pill
+    const grp = document.getElementById(groupId);
+    if (grp) {
+      grp.querySelector('.cat-pill').classList.add('active');
+      // Mark the clicked item as selected
+      grp.querySelectorAll('.cat-dropdown-item').forEach(item => {
+        const itemTxt = item.textContent.trim().replace('✓','').trim();
+        const catMap = {
+          'All Men's':'Men', 'All Women's':'Women', 'All Kids':'Kids',
+          'Tops':'Shirts', 'Dresses':'Dresses', 'Trousers':'Trousers',
+          'Jackets':'Jackets', 'Shirts':'Shirts', 'Accessories':'Accessories'
+        };
+        if (catMap[itemTxt] === cat || itemTxt === cat) {
+          item.classList.add('selected');
+        }
+      });
+      // Also mark in "More" group if it's a sub-cat
+      const moreGrp = document.getElementById('grp-more');
+      if (moreGrp && groupId !== 'grp-more') {
+        moreGrp.querySelectorAll('.cat-dropdown-item').forEach(item => {
+          const itemTxt = item.textContent.trim().replace('✓','').trim();
+          const catMap2 = {'Tops':'Shirts','Dresses':'Dresses','Trousers':'Trousers','Jackets':'Jackets','Shirts':'Shirts','Accessories':'Accessories'};
+          if (catMap2[itemTxt] === cat || itemTxt === cat) item.classList.add('selected');
+        });
+      }
+    }
+  }
+
+  // Run the actual filter (pass null for el since we manage active state ourselves)
+  filterCategory(cat, null, false);
+  document.getElementById('products').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.cat-group')) {
+    document.querySelectorAll('.cat-group.open').forEach(g => g.classList.remove('open'));
+  }
+});
+
+// Keyboard accessibility: close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.cat-group.open').forEach(g => g.classList.remove('open'));
+  }
+});
 </script>
 </body>
 </html>
