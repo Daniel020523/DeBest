@@ -357,6 +357,69 @@
   }
   .success-cta:hover { transform: translateY(-2px); background: var(--accent2); }
 
+  /* ── OTP SCREEN ── */
+  .otp-screen {
+    display: none; text-align: center;
+    animation: fadeUp .5s ease both;
+  }
+  .otp-screen.active { display: block; }
+  .otp-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: rgba(232,196,122,0.08);
+    border: 2px solid rgba(232,196,122,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto 24px;
+    animation: popIn .5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .otp-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem; font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .otp-subtitle {
+    color: var(--muted); font-size: 0.88rem;
+    line-height: 1.6; margin-bottom: 32px;
+  }
+  .otp-subtitle strong { color: var(--text); }
+  .otp-inputs {
+    display: flex; justify-content: center; gap: 10px;
+    margin-bottom: 24px;
+  }
+  .otp-digit {
+    width: 52px; height: 60px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; font-weight: 700;
+    text-align: center;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    caret-color: var(--accent);
+  }
+  .otp-digit:focus {
+    border-color: rgba(232,196,122,0.6);
+    box-shadow: 0 0 0 3px rgba(232,196,122,0.08);
+  }
+  .otp-digit.filled { border-color: rgba(232,196,122,0.35); }
+  .otp-resend {
+    font-size: 0.8rem; color: var(--muted);
+    margin-top: 18px;
+  }
+  .otp-resend a {
+    color: var(--accent); text-decoration: none;
+    font-weight: 500; cursor: pointer;
+  }
+  .otp-resend a:hover { text-decoration: underline; }
+  .otp-back {
+    display: inline-block; margin-top: 14px;
+    font-size: 0.78rem; color: var(--muted);
+    text-decoration: none; cursor: pointer;
+    transition: color .2s;
+  }
+  .otp-back:hover { color: var(--accent); }
+
   /* ── BACK LINK ── */
   .back-link {
     position: absolute; top: 28px; left: 32px;
@@ -582,6 +645,34 @@
         </p>
       </div>
 
+      <!-- ── OTP VERIFICATION SCREEN ── -->
+      <div class="otp-screen" id="otpScreen">
+        <div class="otp-icon">✉️</div>
+        <h2 class="otp-title">Check your email.</h2>
+        <p class="otp-subtitle">We sent a 6-digit code to<br><strong id="otpEmailLabel"></strong></p>
+
+        <div class="form-alert" id="otpAlert"></div>
+
+        <div class="otp-inputs" id="otpInputs">
+          <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp0">
+          <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp1">
+          <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp2">
+          <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp3">
+          <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp4">
+          <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp5">
+        </div>
+
+        <button class="submit-btn" id="otpVerifyBtn" onclick="handleOTPVerify()">
+          <span class="btn-text">Verify & Activate</span>
+          <div class="btn-spinner"></div>
+        </button>
+
+        <p class="otp-resend">
+          Didn't receive it? <a onclick="handleResendOTP()">Resend code</a>
+        </p>
+        <a class="otp-back" onclick="showOTPBack()">← Use a different email</a>
+      </div>
+
       <!-- ── SUCCESS SCREEN ── -->
       <div class="success-screen" id="successScreen">
         <div class="success-check">✓</div>
@@ -697,6 +788,9 @@ async function handleLogin() {
   }
 }
 
+// ── PENDING SIGNUP STATE ──
+let pendingSignup = null; // { email, password, firstName, lastName }
+
 // ── SIGNUP ──
 async function handleSignup() {
   const firstName = document.getElementById('signupFirst').value.trim();
@@ -722,31 +816,19 @@ async function handleSignup() {
   clearAlerts();
 
   try {
-    const { data, error } = await db.auth.signUp({
+    // Send OTP to email for verification
+    const { error } = await db.auth.signInWithOtp({
       email,
-      password,
       options: {
+        shouldCreateUser: true,
         data: { full_name: firstName + ' ' + lastName, first_name: firstName, last_name: lastName }
       }
     });
     if (error) throw error;
 
-    if (data.user && !data.session) {
-      // Email confirmation required
-      showSuccess(
-        'Check your email!',
-        'We sent a confirmation link to ' + email + '. Click it to activate your account and start shopping.'
-      );
-    } else {
-      // Auto-confirmed
-      localStorage.setItem('debest_user', JSON.stringify({
-        id: data.user.id,
-        email: data.user.email,
-        name: firstName + ' ' + lastName
-      }));
-      showSuccess('Account created!', 'Welcome to DeBest Wear, ' + firstName + '! Redirecting you now...');
-      setTimeout(() => { window.location.href = 'Store.html'; }, 1800);
-    }
+    // Store pending info; we'll complete signup after OTP verified
+    pendingSignup = { email, password, firstName, lastName };
+    showOTPScreen(email);
   } catch (err) {
     let msg = err.message;
     if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already been registered')) {
@@ -755,6 +837,117 @@ async function handleSignup() {
     showAlert('signupAlert', msg, 'error');
     setLoading('signupBtn', false);
   }
+}
+
+// ── OTP SCREEN ──
+function showOTPScreen(email) {
+  document.getElementById('signupSection').classList.remove('active');
+  document.getElementById('loginSection').classList.remove('active');
+  document.querySelector('.auth-tabs').style.display = 'none';
+  document.getElementById('otpEmailLabel').textContent = email;
+  document.getElementById('otpScreen').classList.add('active');
+  document.getElementById('otp0').focus();
+  setupOTPInputs();
+}
+
+function setupOTPInputs() {
+  const inputs = document.querySelectorAll('.otp-digit');
+  inputs.forEach((input, i) => {
+    input.value = '';
+    input.classList.remove('filled');
+
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/\D/g, '');
+      e.target.value = val ? val[val.length - 1] : '';
+      if (val && i < inputs.length - 1) inputs[i + 1].focus();
+      e.target.classList.toggle('filled', !!e.target.value);
+      // Auto-submit when all filled
+      const code = [...inputs].map(el => el.value).join('');
+      if (code.length === 6) handleOTPVerify();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && i > 0) {
+        inputs[i - 1].focus();
+        inputs[i - 1].value = '';
+        inputs[i - 1].classList.remove('filled');
+      }
+    });
+
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      [...inputs].forEach((inp, idx) => {
+        inp.value = pasted[idx] || '';
+        inp.classList.toggle('filled', !!inp.value);
+      });
+      const lastFilled = Math.min(pasted.length, inputs.length) - 1;
+      if (lastFilled >= 0) inputs[lastFilled].focus();
+      if (pasted.length >= 6) handleOTPVerify();
+    });
+  });
+}
+
+async function handleOTPVerify() {
+  const inputs = document.querySelectorAll('.otp-digit');
+  const token = [...inputs].map(el => el.value).join('');
+  if (token.length < 6) {
+    showAlert('otpAlert', 'Please enter all 6 digits.', 'error');
+    return;
+  }
+
+  setLoading('otpVerifyBtn', true);
+  document.getElementById('otpAlert').className = 'form-alert';
+
+  try {
+    const email = pendingSignup ? pendingSignup.email : document.getElementById('loginEmail').value.trim();
+    const { data, error } = await db.auth.verifyOtp({ email, token, type: 'email' });
+    if (error) throw error;
+
+    const name = pendingSignup
+      ? pendingSignup.firstName + ' ' + pendingSignup.lastName
+      : (data.user?.user_metadata?.full_name || email.split('@')[0]);
+
+    localStorage.setItem('debest_user', JSON.stringify({
+      id: data.user.id,
+      email: data.user.email,
+      name
+    }));
+
+    pendingSignup = null;
+    showSuccess('You\'re in!', 'Welcome to DeBest Wear, ' + name.split(' ')[0] + '! Redirecting you now...');
+    setTimeout(() => {
+      const redirect = new URLSearchParams(window.location.search).get('redirect') || 'Store.html';
+      window.location.href = redirect;
+    }, 1800);
+  } catch (err) {
+    const msg = err.message.toLowerCase().includes('invalid') || err.message.toLowerCase().includes('expired')
+      ? 'Invalid or expired code. Please try again or resend.'
+      : err.message;
+    showAlert('otpAlert', msg, 'error');
+    setLoading('otpVerifyBtn', false);
+  }
+}
+
+async function handleResendOTP() {
+  const email = pendingSignup ? pendingSignup.email : document.getElementById('loginEmail').value.trim();
+  if (!email) return;
+  try {
+    const { error } = await db.auth.signInWithOtp({ email, options: { shouldCreateUser: !!pendingSignup } });
+    if (error) throw error;
+    showAlert('otpAlert', '✓ A new code has been sent to ' + email, 'success');
+    document.querySelectorAll('.otp-digit').forEach(el => { el.value = ''; el.classList.remove('filled'); });
+    document.getElementById('otp0').focus();
+  } catch (err) {
+    showAlert('otpAlert', err.message, 'error');
+  }
+}
+
+function showOTPBack() {
+  document.getElementById('otpScreen').classList.remove('active');
+  document.querySelector('.auth-tabs').style.display = 'flex';
+  pendingSignup = null;
+  switchTab('signup');
 }
 
 // ── FORGOT PASSWORD ──
@@ -794,6 +987,7 @@ async function handleGoogleAuth() {
 function showSuccess(title, msg) {
   document.getElementById('loginSection').classList.remove('active');
   document.getElementById('signupSection').classList.remove('active');
+  document.getElementById('otpScreen').classList.remove('active');
   document.querySelector('.auth-tabs').style.display = 'none';
   document.getElementById('successTitle').textContent = title;
   document.getElementById('successMsg').textContent = msg;
