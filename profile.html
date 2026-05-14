@@ -388,20 +388,14 @@ function showTab(name, el) {
 async function loadOrders() {
   const container = document.getElementById('ordersContainer');
 
-  // Try Supabase first
+  // Fetch orders from Supabase
   let orders = [];
   try {
-    const isLive = SUPABASE_URL && !SUPABASE_URL.includes('YOUR_PROJECT');
-    if (isLive && currentUser?.id) {
+    if (currentUser?.id) {
       const { data, error } = await db.from('orders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
       if (!error) orders = data || [];
     }
   } catch {}
-
-  // Fallback: demo orders if none found
-  if (orders.length === 0) {
-    orders = getDemoOrders();
-  }
 
   // Stats
   const totalSpent = orders.reduce((s,o) => s + (o.total || 0), 0);
@@ -476,14 +470,6 @@ function toggleOrder(header) {
   arrow.textContent = body.classList.contains('open') ? '▴' : '▾';
 }
 
-function getDemoOrders() {
-  return [
-    { id:1, payment_reference:'DW-DEMO001', status:'delivered', created_at: new Date(Date.now()-7*86400000).toISOString(), total:28500, subtotal:28500, delivery_fee:0, discount:0, payment_method:'paystack', delivery_address:'12 Bode Thomas, Lagos', items:[{name:'Linen Relaxed Blazer',category:'Men',size:'L',qty:1,price:28500,image_url:null}] },
-    { id:2, payment_reference:'DW-DEMO002', status:'shipped', created_at: new Date(Date.now()-2*86400000).toISOString(), total:31000, subtotal:32500, delivery_fee:0, discount:1500, payment_method:'cod', delivery_address:'45 Wuse II, Abuja', items:[{name:'Wrap Maxi Dress',category:'Women',size:'M',qty:1,price:19500,image_url:null},{name:'Cargo Utility Pants',category:'Men',size:'S',qty:1,price:15000,image_url:null}] },
-    { id:3, payment_reference:'DW-DEMO003', status:'pending', created_at: new Date().toISOString(), total:8500, subtotal:8500, delivery_fee:1500, discount:0, payment_method:'paystack', delivery_address:'3 GRA, Port Harcourt', items:[{name:'Kids Denim Jacket',category:'Kids',size:'6-7Y',qty:1,price:8500,image_url:null}] },
-  ];
-}
-
 // ── SAVE PROFILE ──
 async function saveProfile() {
   const first = document.getElementById('p-first').value.trim();
@@ -506,12 +492,8 @@ async function saveProfile() {
     alertEl.className = 'form-alert success';
     showToast('Profile saved ✓', 'success');
   } catch (e) {
-    // Offline/demo mode — just save locally
-    currentUser.name = first + ' ' + last;
-    localStorage.setItem('debest_user', JSON.stringify(currentUser));
-    alertEl.textContent = '✓ Profile saved locally';
-    alertEl.className = 'form-alert success';
-    showToast('Profile saved ✓', 'success');
+    alertEl.textContent = e.message || 'Failed to save profile.';
+    alertEl.className = 'form-alert error';
   }
 }
 

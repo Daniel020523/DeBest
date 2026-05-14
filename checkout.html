@@ -541,12 +541,14 @@ async function placeOrder() {
 
   if (selectedPayment === 'paystack') {
     // Paystack popup
-    const paystackKey = localStorage.getItem('debest_paystack_key') || 'pk_test_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
-    if (paystackKey.includes('XXXX')) {
-      // Demo mode — skip real Paystack
-      await saveOrder(orderData, 'DEMO-' + Date.now());
-    } else {
-      const handler = PaystackPop.setup({
+    const paystackKey = localStorage.getItem('debest_paystack_key') || '';
+    if (!paystackKey) {
+      btn.classList.remove('loading'); btn.disabled = false;
+      sideBtn.classList.remove('loading'); sideBtn.disabled = false;
+      showToast('Paystack key not configured. Please contact the store admin.', 'error');
+      return;
+    }
+    const handler = PaystackPop.setup({
         key: paystackKey,
         email: orderData.customer_email,
         amount: total * 100, // kobo
@@ -562,7 +564,6 @@ async function placeOrder() {
       });
       handler.openIframe();
       return;
-    }
   } else {
     await saveOrder(orderData, 'COD-' + Date.now());
   }
@@ -571,12 +572,11 @@ async function placeOrder() {
 async function saveOrder(orderData, ref) {
   orderData.payment_reference = ref;
   try {
-    const isConfigured = SUPABASE_URL && !SUPABASE_URL.includes('YOUR_PROJECT');
-    if (isConfigured) {
-      const { error } = await db.from('orders').insert([orderData]);
-      if (error) console.warn('Order save error:', error.message);
-    }
-  } catch {}
+    const { error } = await db.from('orders').insert([orderData]);
+    if (error) console.warn('Order save error:', error.message);
+  } catch (e) {
+    console.warn('Order save failed:', e.message);
+  }
 
   // Clear cart
   localStorage.removeItem('debest_cart');

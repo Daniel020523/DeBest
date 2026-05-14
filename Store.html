@@ -1492,9 +1492,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupRealtime();
 });
 
-// ── CREDENTIALS CHECK ──
-function isSupabaseConfigured() { return true; }
-
 // ── FETCH ──
 async function fetchProducts() {
   try {
@@ -1524,10 +1521,9 @@ async function fetchProducts() {
 // re-initialise the Supabase client and reload live products.
 window.addEventListener('storage', async (e) => {
   if (e.key === 'debest_url' || e.key === 'debest_key' || e.key === 'debest_connected_at') {
-    if (isSupabaseConfigured()) {
-      const url = localStorage.getItem('debest_url');
-      const key = localStorage.getItem('debest_key');
-      // Reinitialise Supabase client with fresh credentials
+    const url = localStorage.getItem('debest_url');
+    const key = localStorage.getItem('debest_key');
+    if (url && key) {
       db = createClient(url, key);
       await fetchProducts();
       setupRealtime();

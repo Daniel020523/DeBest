@@ -147,19 +147,14 @@ async function init() {
     showEmpty(); return;
   }
 
-  // Fetch wishlisted products from Supabase or demo
-  const isLive = SUPABASE_URL && !SUPABASE_URL.includes('YOUR_PROJECT');
-  if (isLive) {
-    try {
-      const { data, error } = await db.from('products').select('*').in('id', wishlist);
-      if (!error && data) products = data;
-    } catch {}
-  }
+  // Fetch wishlisted products from Supabase
+  try {
+    const { data, error } = await db.from('products').select('*').in('id', wishlist);
+    if (!error && data) products = data;
+  } catch {}
 
-  // Fallback to demo data filtered by wishlist ids
   if (products.length === 0) {
-    const demo = getDemoProducts();
-    products = demo.filter(p => wishlist.includes(p.id));
+    showEmpty(); return;
   }
 
   // Sort in wishlist order
@@ -252,19 +247,6 @@ function showToast(msg, type) {
   el.textContent = msg;
   document.getElementById('toasts').appendChild(el);
   setTimeout(() => el.remove(), 3200);
-}
-
-function getDemoProducts() {
-  return [
-    {id:1,name:'Linen Relaxed Blazer',category:'Men',price:28500,old_price:38000,sizes:['S','M','L','XL'],image_url:null,badge:'New',rating:4.7,reviews:128},
-    {id:2,name:'Wrap Maxi Dress',category:'Women',price:19500,old_price:null,sizes:['XS','S','M','L'],image_url:null,badge:null,rating:4.9,reviews:342},
-    {id:3,name:'Cargo Utility Pants',category:'Men',price:15000,old_price:22000,sizes:['S','M','L','XL'],image_url:null,badge:'Sale',rating:4.5,reviews:89},
-    {id:4,name:'Floral Puff Sleeve Top',category:'Women',price:11500,old_price:null,sizes:['XS','S','M','L'],image_url:null,badge:'New',rating:4.6,reviews:201},
-    {id:5,name:'Kids Denim Jacket',category:'Kids',price:8500,old_price:12000,sizes:['2-3Y','4-5Y','6-7Y','8-9Y'],image_url:null,badge:'Sale',rating:4.8,reviews:156},
-    {id:6,name:'Oversized Oxford Shirt',category:'Men',price:14500,old_price:null,sizes:['S','M','L','XL'],image_url:null,badge:null,rating:4.4,reviews:67},
-    {id:7,name:'Satin Slip Dress',category:'Women',price:23000,old_price:31000,sizes:['XS','S','M','L'],image_url:null,badge:'Sale',rating:4.8,reviews:289},
-    {id:8,name:'Kids Graphic Tee Set',category:'Kids',price:6500,old_price:null,sizes:['2-3Y','4-5Y','6-7Y','8-9Y'],image_url:null,badge:'New',rating:4.7,reviews:412},
-  ];
 }
 
 document.addEventListener('DOMContentLoaded', init);
